@@ -1,66 +1,65 @@
 from textwrap import dedent
 from crewai import Task
+from crewai_tools import ScrapeWebsiteTool
 
 from agents import ArticleAgents
 
 
 class ArticleTasks:
+    docs_scrape_tool = ScrapeWebsiteTool(
+        website_url="https://docs.crewai.com/how-to/Creating-a-Crew-and-kick-it-off/"
+    )
 
-    @staticmethod
-    def plan():
+    @classmethod
+    def inquiry_resolution(cls):
         return Task(
             description=dedent("""
-                1. Prioritize the latest trends, key players, 
-                and noteworthy news on {topic}.\n
-                2. Identify the target audience, considering 
-                their interests and pain points.\n
-                3. Develop a detailed content outline including 
-                an introduction, key points, and a call to action.\n
-                4. Include SEO keywords and relevant data or sources.
+                {customer} just reached out with a super important ask:\n
+                {inquiry}\n\n
+                {person} from {customer} is the one that reached out. 
+                Make sure to use everything you know 
+                to provide the best support possible.
+                You must strive to provide a complete 
+                and accurate response to the customer's inquiry.
                 """),
             expected_output=dedent("""
-                A comprehensive content plan document 
-                with an outline, audience analysis, 
-                SEO keywords, and resources.
+                A detailed, informative response to the 
+                customer's inquiry that addresses 
+                all aspects of their question.\n
+                The response should include references 
+                to everything you used to find the answer, 
+                including external data or solutions. 
+                Ensure the answer is complete, 
+                leaving no questions unanswered, and maintain a helpful and friendly 
+                tone throughout.
                 """),
-            agent=ArticleAgents.get_planner(),
+            agent=ArticleAgents.get_support_agent(),
+            tools=[cls.docs_scrape_tool],
         )
 
-    @staticmethod
-    def write():
+    @classmethod
+    def quality_assurance_review(cls):
         return Task(
             description=dedent("""
-                1. Use the content plan to craft a compelling 
-                blog post on {topic}.\n
-                2. Incorporate SEO keywords naturally.\n
-                3. Sections/Subtitles are properly named 
-                in an engaging manner.\n
-                4. Ensure the post is structured with an 
-                engaging introduction, insightful body, 
-                and a summarizing conclusion.\n
-                5. Proofread for grammatical errors and 
-                alignment with the brand's voice.\n
+                Review the response drafted by the Senior Support Representative for {customer}'s inquiry. 
+                Ensure that the answer is comprehensive, accurate, and adheres to the 
+                high-quality standards expected for customer support.\n
+                Verify that all parts of the customer's inquiry 
+                have been addressed 
+                thoroughly, with a helpful and friendly tone.\n
+                Check for references and sources used to 
+                 find the information, 
+                ensuring the response is well-supported and 
+                leaves no questions unanswered.
                 """),
             expected_output=dedent("""
-                A well-written blog post 
-                in markdown format, ready for publication, 
-                each section should have 2 or 3 paragraphs.
+                A final, detailed, and informative response 
+                ready to be sent to the customer.\n
+                This response should fully address the 
+                customer's inquiry, incorporating all 
+                relevant feedback and improvements.\n
+                Don't be too formal, we are a chill and cool company 
+                but maintain a professional and friendly tone throughout.
                 """),
-            agent=ArticleAgents.get_writer(),
-        )
-
-    @staticmethod
-    def edit():
-        return Task(
-            description=dedent("""
-                Proofread the given blog post for 
-                grammatical errors and 
-                alignment with the brand's voice.
-                """),
-            expected_output=dedent("""
-                A well-written blog post in markdown format, 
-                ready for publication, 
-                each section should have 2 or 3 paragraphs.
-                """),
-            agent=ArticleAgents.get_editor(),
+            agent=ArticleAgents.get_support_quality_assurance_agent(),
         )

@@ -8,83 +8,55 @@ class ArticleAgents:
     GROQ_API_KEY = os.getenv("GROQ_API_KEY")
     MODEL = "llama3-70b-8192"
 
-    _planner = None
-    _writer = None
+    _support_agent = None
+    _support_quality_assurance_agent = None
     _editor = None
 
     @classmethod
-    def get_planner(cls):
-        if cls._planner is None:
-            cls._planner = cls._create_agent(
-                role="Content Planner",
-                goal="Plan engaging and factually accurate content on {topic}",
+    def get_support_agent(cls):
+        if cls._support_agent is None:
+            cls._support_agent = cls._create_agent(
+                role="Senior Support Representative",
+                goal="Be the most friendly and helpful support representative in your team",
                 backstory=dedent("""
-                    You're working on planning a blog article 
-                    about the topic: {topic}.
-                    You collect information that helps the 
-                    audience learn something 
-                    and make informed decisions. 
-                    Your work is the basis for 
-                    the Content Writer to write an article on this topic.
-                    """)
+                    You work at crewAI (https://crewai.com) and 
+                    You are now working on providing 
+                    support to {customer}, a super important customer 
+                    for your company.
+                    You need to make sure that you provide the best support!
+                    Make sure to provide full complete answers, 
+                    and make no assumptions.
+                    """),
+                allow_delegation=False,
             )
-        return cls._planner
+        return cls._support_agent
 
     @classmethod
-    def get_writer(cls):
-        if cls._writer is None:
-            cls._writer = cls._create_agent(
-                role="Content Writer",
+    def get_support_quality_assurance_agent(cls):
+        if cls._support_quality_assurance_agent is None:
+            cls._support_quality_assurance_agent = cls._create_agent(
+                role="Support Quality Assurance Specialist",
                 goal=dedent("""
-                    Write insightful and factually accurate 
-                    opinion piece about the topic: {topic}
+                    Get recognition for providing the
+                    best support quality assurance in your team
                     """),
                 backstory=dedent("""
-                    You're working on a writing 
-                    a new opinion piece about the topic: {topic}. 
-                    You base your writing on the work of 
-                    the Content Planner, who provides an outline 
-                    and relevant context about the topic. 
-                    You follow the main objectives and 
-                    direction of the outline, 
-                    as provide by the Content Planner. 
-                    You also provide objective and impartial insights 
-                    and back them up with information 
-                    provide by the Content Planner. 
-                    You acknowledge in your opinion piece 
-                    when your statements are opinions 
-                    as opposed to objective statements.
+                    You work at crewAI (https://crewai.com) and 
+                    are now working with your team 
+                    on a request from {customer} ensuring that 
+                    the support representative is 
+                    providing the best support possible.\n
+                    You need to make sure that the support representative 
+                    is providing full
+                    complete answers, and make no assumptions.
                     """)
             )
-        return cls._writer
-
-    @classmethod
-    def get_editor(cls):
-        if cls._editor is None:
-            cls._editor = cls._create_agent(
-                role="Editor",
-                goal=dedent("""
-                    Edit a given blog post to align with 
-                    the writing style of the organization. 
-                    """),
-                backstory=dedent("""
-                    You are an editor who receives a blog post 
-                    from the Content Writer. 
-                    Your goal is to review the blog post 
-                    to ensure that it follows journalistic best practices,
-                    provides balanced viewpoints 
-                    when providing opinions or assertions, 
-                    and also avoids major controversial topics 
-                    or opinions when possible.
-                    """)
-            )
-        return cls._editor
+        return cls._support_quality_assurance_agent
 
     @classmethod
     def _create_agent(cls, **kwargs):
         return Agent(
             **kwargs,
-            allow_delegation=False,
             llm=ChatGroq(api_key=cls.GROQ_API_KEY, model=cls.MODEL),
             max_rpm=30,
             max_iter=5,

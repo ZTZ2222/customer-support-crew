@@ -1,7 +1,7 @@
+from textwrap import dedent
 from dotenv import load_dotenv
-from crewai import Crew, Process
+from crewai import Crew
 import agentops
-from random import randint
 
 
 from agents import ArticleAgents
@@ -9,23 +9,29 @@ from tasks import ArticleTasks
 
 
 load_dotenv()
-agentops.init(tags=["articles-crew"])
+agentops.init(tags=["customer-support-crew"])
 
 
 if __name__ == "__main__":
     crew = Crew(
-        agents=[ArticleAgents.get_planner(), ArticleAgents.get_writer(),
-                ArticleAgents.get_editor()],
-        tasks=[ArticleTasks.plan(), ArticleTasks.write(), ArticleTasks.edit()],
+        agents=[ArticleAgents.get_support_agent(
+        ), ArticleAgents.get_support_quality_assurance_agent()],
+        tasks=[ArticleTasks.inquiry_resolution(
+        ), ArticleTasks.quality_assurance_review()],
         verbose=2,
+        memory=True,
     )
 
-    print("Welcome to the Articles Crew Setup")
-    print("---------------------------------------")
-    topic = input("Please enter the main topic of your research: ")
+    result = crew.kickoff(inputs={
+        "customer": "DeepLearningAI",
+        "inquiry": dedent("""
+            I need help with setting up a Crew 
+            and kicking it off, specifically 
+            how can I add memory to my crew? 
+            Can you provide guidance?
+            """),
+        "person": "Andrew",
+    })
 
-    result = crew.kickoff(inputs={"topic": topic})
-
-    file_name = topic.lower().replace(" ", "_")
-    with open(f"output-{file_name}.md", "w") as f:
+    with open("output.md", "w") as f:
         f.write(result)
