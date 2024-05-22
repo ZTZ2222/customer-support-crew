@@ -27,5 +27,5 @@ if __name__ == "__main__":
     result = crew.kickoff(inputs={"topic": topic})
 
     file_name = topic.lower().replace(" ", "_")
-    with open(f"{file_name}.md", "w") as f:
+    with open(f"output-{file_name}.md", "w") as f:
         f.write(result)
