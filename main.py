@@ -20,7 +20,12 @@ if __name__ == "__main__":
         verbose=2,
     )
 
-    result = crew.kickoff(inputs={"topic": "Bitcoin"})
+    print("Welcome to the Articles Crew Setup")
+    print("---------------------------------------")
+    topic = input("Please enter the main topic of your research: ")
 
-    with open(f"output-{randint(0, 10000)}.md", "w") as f:
+    result = crew.kickoff(inputs={"topic": topic})
+
+    file_name = topic.lower().replace(" ", "_")
+    with open(f"{file_name}.md", "w") as f:
         f.write(result)
